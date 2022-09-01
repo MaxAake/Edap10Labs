@@ -109,19 +109,19 @@ class clockMonitor {
         alarmSet = false;
     }
 
-    public void setTime(int[] time) {
+    public synchronized void setTime(int[] time) {
         currentHour = time[0];
         currentMinute = time[1];
         currentSecond = time[2];
     }
 
-    public void setAlarmTime(int[] time) {
+    public synchronized void setAlarmTime(int[] time) {
         alarmHour = time[0];
         alarmMinute = time[1];
         alarmSecond = time[2];
     }
 
-    public int[] getTime() {
+    public synchronized int[] getTime() {
         int[] result = { currentHour, currentMinute, currentSecond };
         return result;
     }
