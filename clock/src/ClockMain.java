@@ -1,7 +1,4 @@
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import clock.AlarmClockEmulator;
 import clock.io.ClockInput;
 import clock.io.ClockInput.UserInput;
@@ -15,7 +12,6 @@ public class ClockMain {
         ClockOutput out = emulator.getOutput();
         Semaphore inputSemaphore = in.getSemaphore();
         clockMonitor monitor = new clockMonitor(0, 0, 0);
-        out.displayTime(0, 0, 0); // arbitrary time: just an example
         Thread t1 = new Thread(() -> {
             try {
                 timeProgression(monitor, out);
@@ -23,35 +19,38 @@ public class ClockMain {
                 e.printStackTrace();
             }
         });
-        t1.start();
-        try {
+        Thread t2 = new Thread(() -> { // Not sure if we need this thread, might be removed later.
+            try {
 
-            while (true) {
-                inputSemaphore.acquire();
-                UserInput userInput = in.getUserInput();
-                int choice = userInput.getChoice();
-                int h = userInput.getHours();
-                int m = userInput.getMinutes();
-                int s = userInput.getSeconds();
-                int[] time = { h, m, s };
-                switch (choice) {
-                    case 1: // If the user is setting a new clock time.
-                        changeTime(time, monitor, out);
-                        break;
+                while (true) {
+                    inputSemaphore.acquire();
+                    UserInput userInput = in.getUserInput();
+                    int choice = userInput.getChoice();
+                    int h = userInput.getHours();
+                    int m = userInput.getMinutes();
+                    int s = userInput.getSeconds();
+                    int[] time = { h, m, s };
+                    switch (choice) {
+                        case 1: // If the user is setting a new clock time.
+                            changeTime(time, monitor, out);
+                            break;
 
-                    case 2: // If the user is setting a new alarm time.
-                        monitor.setAlarmTime(time);
-                        break;
+                        case 2: // If the user is setting a new alarm time.
+                            monitor.setAlarmTime(time);
+                            break;
 
-                    case 3: // If the user wants to toggle the alarm.
-                        out.setAlarmIndicator(monitor.toggleAlarm());
-                        break;
+                        case 3: // If the user wants to toggle the alarm.
+                            out.setAlarmIndicator(monitor.toggleAlarm());
+                            break;
+                    }
+                    System.out.println("choice=" + choice + " h=" + h + " m=" + m + " s=" + s);
                 }
-                System.out.println("choice=" + choice + " h=" + h + " m=" + m + " s=" + s);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        });
+        t1.start();
+        t2.start();
     }
 
     static void timeProgression(clockMonitor monitor, ClockOutput out) throws InterruptedException {
@@ -97,7 +96,7 @@ class clockMonitor {
     private boolean alarmSet;
 
     /*
-     * Constructor sets the hour
+     * 
      */
     clockMonitor(int h, int m, int s) {
         this.currentHour = h;
