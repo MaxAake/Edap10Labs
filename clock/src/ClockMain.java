@@ -54,12 +54,16 @@ public class ClockMain {
     }
 
     static void timeProgression(clockMonitor monitor, ClockOutput out) throws InterruptedException {
+        long t0 = System.currentTimeMillis();
+        int counter = 1;
         while (true) {
+            long now = System.currentTimeMillis();
+            Thread.sleep(counter*1000 - now + t0);
             int[] time = monitor.getTime();
             time[2] = time[2] + 1;
             keepTrackOfTimePeriodicity(time);
             changeTime(time, monitor, out);
-            Thread.sleep(977);
+            counter++;
         }
     }
 
