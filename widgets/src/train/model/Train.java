@@ -18,7 +18,7 @@ public class Train {
 	 * 
 	 * @param length The length of the train in segments.
 	 */
-	public void makeTrain(int length) throws InterruptedException {
+	public void makeTrain(int length) {
 		for (int i = 0; i < length; i++) {
 			Segment tmp = trainRoute.next();
 			trainChain.add(tmp);
