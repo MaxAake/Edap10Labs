@@ -17,7 +17,6 @@ public class FactoryController {
         new Thread(() -> {
             while (true) {
                 monitor.waitToStop(conveyor);
-                System.out.print("off");
                 monitor.waitToStart(conveyor);
             }
         }).start();
@@ -25,9 +24,8 @@ public class FactoryController {
         new Thread(() -> {
             while (true) {
                 press.waitFor(Widget.GREEN_BLOB);
-                monitor.blockPress();
+                monitor.usingPress();
                 monitor.waitforConveyorStop();
-                System.out.println("press");
                 press.performAction();
                 monitor.freePress();
             }
@@ -36,9 +34,8 @@ public class FactoryController {
         new Thread(() -> {
             while (true) {
                 paint.waitFor(Widget.ORANGE_MARBLE);
-                monitor.blockPainter();
+                monitor.usingPainter();
                 monitor.waitforConveyorStop();
-                System.out.println("paint");
                 paint.performAction();
                 monitor.freePainter();
             }
@@ -46,47 +43,43 @@ public class FactoryController {
     }
 
     public static class ConveyorMonitor {
-        private boolean blockingPress;
-        private boolean blockingPainter;
+        private boolean pressInUse;
+        private boolean painterInUse;
         private boolean conveyorOn;
 
         public ConveyorMonitor() {
-            blockingPress = false;
-            blockingPainter = false;
+            pressInUse = false;
+            painterInUse = false;
             conveyorOn = true;
         }
 
-        public synchronized void blockPress() {
-            blockingPress = true;
+        public synchronized void usingPress() {
+            pressInUse = true;
             notifyAll();
         }
 
-        public synchronized void blockPainter() {
-            blockingPainter = true;
+        public synchronized void usingPainter() {
+            painterInUse = true;
             notifyAll();
         }
 
         public synchronized void freePress() {
-            blockingPress = false;
+            pressInUse = false;
             notifyAll();
         }
 
         public synchronized void freePainter() {
-            blockingPainter = false;
+            painterInUse = false;
             notifyAll();
         }
 
         private synchronized boolean runConveyor() {
-            return !blockingPainter && !blockingPress;
+            return !painterInUse && !pressInUse;
         }
 
         public synchronized void waitToStop(Conveyor con) {
             while (this.runConveyor()) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                tryToWait();
             }
             con.off();
             conveyorOn = false;
@@ -95,11 +88,7 @@ public class FactoryController {
 
         public synchronized void waitToStart(Conveyor con) {
             while (!this.runConveyor()) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+               tryToWait();
             }
             con.on();
             conveyorOn = true;
@@ -108,11 +97,14 @@ public class FactoryController {
 
         public synchronized void waitforConveyorStop() {
             while (conveyorOn) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            	tryToWait();
+            }
+        }
+        private void tryToWait() {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
