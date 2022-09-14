@@ -6,20 +6,28 @@ import factory.model.Widget;
 
 public class FactoryController {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
 
         Factory factory = new Factory();
 
         Conveyor conveyor = factory.getConveyor();
         ConveyorMonitor monitor = new ConveyorMonitor();
-
         Tool press = factory.getPressTool();
         Tool paint = factory.getPaintTool();
+        new Thread(() -> {
+            while (true) {
+                monitor.waitToStop(conveyor);
+                System.out.print("off");
+                monitor.waitToStart(conveyor);
+            }
+        }).start();
+
         new Thread(() -> {
             while (true) {
                 press.waitFor(Widget.GREEN_BLOB);
                 monitor.blockPress();
                 monitor.waitforConveyorStop();
+                System.out.println("press");
                 press.performAction();
                 monitor.freePress();
             }
@@ -30,19 +38,9 @@ public class FactoryController {
                 paint.waitFor(Widget.ORANGE_MARBLE);
                 monitor.blockPainter();
                 monitor.waitforConveyorStop();
+                System.out.println("paint");
                 paint.performAction();
                 monitor.freePainter();
-            }
-        }).start();
-
-        new Thread(() -> {
-            while (true) {
-                monitor.waitToStop();
-                conveyor.off();
-                monitor.toggleConveyor();
-                monitor.waitToStart();
-                conveyor.on();
-                monitor.toggleConveyor();
             }
         }).start();
     }
@@ -82,7 +80,7 @@ public class FactoryController {
             return !blockingPainter && !blockingPress;
         }
 
-        public synchronized void waitToStop() {
+        public synchronized void waitToStop(Conveyor con) {
             while (this.runConveyor()) {
                 try {
                     wait();
@@ -90,10 +88,12 @@ public class FactoryController {
                     e.printStackTrace();
                 }
             }
+            con.off();
+            conveyorOn = false;
             notifyAll();
         }
 
-        public synchronized void waitToStart() {
+        public synchronized void waitToStart(Conveyor con) {
             while (!this.runConveyor()) {
                 try {
                     wait();
@@ -101,11 +101,9 @@ public class FactoryController {
                     e.printStackTrace();
                 }
             }
-            return;
-        }
-
-        public synchronized void toggleConveyor() {
-            conveyorOn = !conveyorOn;
+            con.on();
+            conveyorOn = true;
+            notifyAll();
         }
 
         public synchronized void waitforConveyorStop() {
