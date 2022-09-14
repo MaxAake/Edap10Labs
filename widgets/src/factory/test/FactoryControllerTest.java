@@ -7,6 +7,10 @@ import factory.simulation.FactoryController;
 public class FactoryControllerTest {
     public static void main(String[] args) {
         Factory.enableTestMode();
-        FactoryController.main(args);
+        try {
+            FactoryController.main(args);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

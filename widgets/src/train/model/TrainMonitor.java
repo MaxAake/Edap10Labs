@@ -20,7 +20,6 @@ public class TrainMonitor {
 	public synchronized void segmentFree(Segment s) {
 		busySegments.remove(s);
 		notifyAll();
-
 	}
 
 }

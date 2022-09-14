@@ -17,10 +17,12 @@ public class Train {
 	 * instructions.
 	 * 
 	 * @param length The length of the train in segments.
+	 * @throws InterruptedException
 	 */
-	public void makeTrain(int length) {
+	public void makeTrain(int length) throws InterruptedException {
 		for (int i = 0; i < length; i++) {
 			Segment tmp = trainRoute.next();
+			trainMonitor.segmentBusy(tmp);
 			trainChain.add(tmp);
 			tmp.enter();
 		}
