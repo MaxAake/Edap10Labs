@@ -1,5 +1,7 @@
 package lift;
 
+import java.util.concurrent.Semaphore;
+
 enum Direction {
     UP,
     DOWN
@@ -10,32 +12,67 @@ public class LiftMonitor {
     private int[] toExit;
     private int currentFloor;
     private boolean isMoving;
+    private int maxPassengers;
     private int passengersInLift;
     private Direction direction;
     private int numberOfFloors;
+    private Semaphore entering;
 
-    public LiftMonitor(int numberOfFloors) {
+    public LiftMonitor(int numberOfFloors, int maxPassengers) {
         toEnter = new int[numberOfFloors];
         toExit = new int[numberOfFloors];
+
         this.numberOfFloors = numberOfFloors;
         currentFloor = 0;
         isMoving = false;
-        passengersInLift = 0;
         direction = Direction.UP;
+
+        this.maxPassengers = maxPassengers;
+        passengersInLift = 0;
+        entering = new Semaphore(maxPassengers);
+
     }
 
-    public synchronized void waitForLift(int floor, boolean entry) throws InterruptedException {
-        if (entry) {
-            toEnter[floor]++;
-        } else {
-            toExit[floor]++;
+    public synchronized void waitForEntry(int floor) throws InterruptedException {
+        toEnter[floor]++;
+        notifyAll();
+        while (currentFloor != floor || isMoving || maxPassengers == passengersInLift) {
+            wait();
         }
+        passengersInLift++;
+        entering.acquire();
+    }
+
+    public synchronized void waitForExit(int floor) throws InterruptedException {
+        toExit[floor]++;
         while (currentFloor != floor || isMoving) {
             wait();
         }
+        passengersInLift--;
     }
 
-    public synchronized int[] getCurrentAndDestinationFloors() {
+    private void waitForPassengers() throws InterruptedException {
+        boolean passengers = checkPassengers();
+        while (!passengers) {
+            wait();
+            passengers = checkPassengers();
+        }
+
+    }
+
+    private boolean checkPassengers() {
+        boolean passengers = passengersInLift > 0;
+        for (int i = 0; i < toEnter.length; i++) {
+            if (toEnter[i] != 0) {
+                passengers = true;
+            }
+        }
+        System.out.println(passengers);
+        return passengers;
+    }
+
+    public synchronized int[] getCurrentAndDestinationFloors() throws InterruptedException {
+        waitForPassengers();
         int destinationFloor;
         int temp = currentFloor;
         handleDirection();
@@ -57,28 +94,34 @@ public class LiftMonitor {
 
     public synchronized void moveLift(LiftView view) throws InterruptedException {
         isMoving = false;
-        view.openDoors(currentFloor);
-        waitForPassengerEntryAndExit();
-        view.closeDoors();
+        if (toEnter[currentFloor] > 0 || toExit[currentFloor] > 0) {
+            view.openDoors(currentFloor);
+            waitForPassengerEntryAndExit();
+            view.closeDoors();
+        }
         isMoving = true;
     }
 
     private void waitForPassengerEntryAndExit() throws InterruptedException {
-        while (toEnter[currentFloor] > 0 || toExit[currentFloor] > 0) {
+        while (isWaitingAndSpaceExists() || toExit[currentFloor] > 0 || entering.availablePermits() < 4) {
             System.out.println("toEnter: " + toEnter[currentFloor] + "\ntoExit: " + toExit[currentFloor]);
             notifyAll();
             wait();
         }
     }
 
-    public synchronized void passengerEntry(int startFloor, int destinationFloor) {
-        passengersInLift++;
+    private boolean isWaitingAndSpaceExists() {
+        return toEnter[currentFloor] > 0 && passengersInLift < maxPassengers;
+    }
+
+    public synchronized void passengerEntry(int startFloor, int destinationFloor) throws InterruptedException {
         toEnter[startFloor]--;
+        entering.release();
         notifyAll();
+        waitForExit(destinationFloor);
     }
 
     public synchronized void passengerExit(int destinationFloor) {
-        passengersInLift--;
         toExit[destinationFloor]--;
         notifyAll();
     }

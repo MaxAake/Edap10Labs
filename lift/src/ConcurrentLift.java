@@ -10,12 +10,13 @@ public class ConcurrentLift {
         final int NBR_FLOORS = 7, MAX_PASSENGERS = 4;
 
         LiftView view = new LiftView(NBR_FLOORS, MAX_PASSENGERS);
-        LiftMonitor monitor = new LiftMonitor(NBR_FLOORS);
-        createPassengers(view, 10, monitor);
+        LiftMonitor monitor = new LiftMonitor(NBR_FLOORS, MAX_PASSENGERS);
+        createPassengers(view, 20, monitor);
         Thread elevatorLift = new Thread(() -> {
             try {
+                int[] floors;
                 while (true) {
-                    int[] floors = monitor.getCurrentAndDestinationFloors();
+                    floors = monitor.getCurrentAndDestinationFloors();
                     view.moveLift(floors[0], floors[1]);
                     monitor.moveLift(view);
                 }
@@ -51,10 +52,10 @@ public class ConcurrentLift {
                     int startFloor = tmp.getStartFloor();
                     int destinationFloor = tmp.getDestinationFloor();
                     tmp.begin(); // Walk in from left
-                    monitor.waitForLift(startFloor, true);
+                    monitor.waitForEntry(startFloor);
                     tmp.enterLift();
                     monitor.passengerEntry(startFloor, destinationFloor);
-                    monitor.waitForLift(destinationFloor, false);
+                    // monitor.waitForLift(destinationFloor, false);
                     tmp.exitLift();
                     monitor.passengerExit(destinationFloor);
                     tmp.end();
