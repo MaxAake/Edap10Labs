@@ -4,7 +4,7 @@
 3. The main thread.  
 The threads communicate through the monitor with notifications.  
 ## R2. Why do we always put wait in a while loop? Why wouldn’t if work?
-Spurious notifications.
+Spurious wakeups.
 
 ## R3. Mathematician Augustus De Morgan (1806–1871) is known for having formulated two laws, which can be expressed in Java as !(a && b) == (!a || !b) !(a || b) == (!a && !b) How can these laws be useful when implementing monitor methods? (Think about your while loops.)
 Monitors often have to keep track of multiple variable states (as they do in this lab), when developing these statements 'not' operators are often moved around, and one must be careful to change AND to OR and vice versa when this happens. (This happened to us this lab)
