@@ -11,7 +11,7 @@ public class ConcurrentLift {
 
         LiftView view = new LiftView(NBR_FLOORS, MAX_PASSENGERS);
         LiftMonitor monitor = new LiftMonitor(NBR_FLOORS, MAX_PASSENGERS);
-        createPassengers(view, 50, monitor);
+        createPassengers(view, 20, monitor);
         Thread elevatorLift = new Thread(() -> {
             try {
                 int[] floors;

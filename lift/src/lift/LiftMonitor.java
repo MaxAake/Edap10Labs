@@ -19,7 +19,7 @@ public class LiftMonitor {
 
         this.numberOfFloors = numberOfFloors;
         currentFloor = 0;
-        isMoving = false;
+        isMoving = true;
         direction = 1;
 
         this.maxPassengers = maxPassengers;
