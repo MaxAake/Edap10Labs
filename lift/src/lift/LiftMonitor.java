@@ -63,10 +63,14 @@ public class LiftMonitor {
         return passengers;
     }
 
-    public synchronized int[] getCurrentAndDestinationFloors() throws InterruptedException {
+    public synchronized int[] getCurrentAndDestinationFloors(LiftView view) throws InterruptedException {
         waitForPassengers();
         handleDirection();
-
+        moveLift(view);
+        if (!checkPassengers()) {
+            int[] result = { currentFloor, currentFloor };
+            return result;
+        }
         int temp = currentFloor;
         currentFloor = currentFloor + direction;
         int[] result = { temp, currentFloor };
@@ -82,7 +86,7 @@ public class LiftMonitor {
         }
     }
 
-    public synchronized void moveLift(LiftView view) throws InterruptedException {
+    private void moveLift(LiftView view) throws InterruptedException {
         isMoving = false;
         if (toEnter[currentFloor] > 0 || toExit[currentFloor] > 0) {
             view.openDoors(currentFloor);
