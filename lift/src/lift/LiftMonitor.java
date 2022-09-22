@@ -2,11 +2,6 @@ package lift;
 
 import java.util.concurrent.Semaphore;
 
-enum Direction {
-    UP,
-    DOWN
-}
-
 public class LiftMonitor {
     private int[] toEnter;
     private int[] toExit;
@@ -14,9 +9,9 @@ public class LiftMonitor {
     private boolean isMoving;
     private int maxPassengers;
     private int passengersInLift;
-    private Direction direction;
     private int numberOfFloors;
     private Semaphore entering;
+    int direction;
 
     public LiftMonitor(int numberOfFloors, int maxPassengers) {
         toEnter = new int[numberOfFloors];
@@ -25,12 +20,11 @@ public class LiftMonitor {
         this.numberOfFloors = numberOfFloors;
         currentFloor = 0;
         isMoving = false;
-        direction = Direction.UP;
+        direction = 1;
 
         this.maxPassengers = maxPassengers;
         passengersInLift = 0;
         entering = new Semaphore(maxPassengers);
-
     }
 
     public synchronized void waitForEntry(int floor) throws InterruptedException {
@@ -57,7 +51,6 @@ public class LiftMonitor {
             wait();
             passengers = checkPassengers();
         }
-
     }
 
     private boolean checkPassengers() {
@@ -67,29 +60,26 @@ public class LiftMonitor {
                 passengers = true;
             }
         }
-        System.out.println(passengers);
         return passengers;
     }
 
     public synchronized int[] getCurrentAndDestinationFloors() throws InterruptedException {
         waitForPassengers();
-        int destinationFloor;
-        int temp = currentFloor;
         handleDirection();
-        if (direction == Direction.UP) {
-            destinationFloor = ++currentFloor;
-        } else {
-            destinationFloor = --currentFloor;
-        }
-        int[] result = { temp, destinationFloor };
+
+        int temp = currentFloor;
+        currentFloor = currentFloor + direction;
+        int[] result = { temp, currentFloor };
         return result;
     }
 
     private void handleDirection() {
-        if (currentFloor == numberOfFloors - 1)
-            direction = Direction.DOWN;
-        if (currentFloor == 0)
-            direction = Direction.UP;
+        if (currentFloor == numberOfFloors - 1) {
+            direction = -1;
+        }
+        if (currentFloor == 0) {
+            direction = 1;
+        }
     }
 
     public synchronized void moveLift(LiftView view) throws InterruptedException {
@@ -104,7 +94,6 @@ public class LiftMonitor {
 
     private void waitForPassengerEntryAndExit() throws InterruptedException {
         while (isWaitingAndSpaceExists() || toExit[currentFloor] > 0 || entering.availablePermits() < 4) {
-            System.out.println("toEnter: " + toEnter[currentFloor] + "\ntoExit: " + toExit[currentFloor]);
             notifyAll();
             wait();
         }

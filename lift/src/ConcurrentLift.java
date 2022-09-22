@@ -11,7 +11,7 @@ public class ConcurrentLift {
 
         LiftView view = new LiftView(NBR_FLOORS, MAX_PASSENGERS);
         LiftMonitor monitor = new LiftMonitor(NBR_FLOORS, MAX_PASSENGERS);
-        createPassengers(view, 20, monitor);
+        createPassengers(view, 50, monitor);
         Thread elevatorLift = new Thread(() -> {
             try {
                 int[] floors;
@@ -26,36 +26,21 @@ public class ConcurrentLift {
         });
 
         elevatorLift.start();
-        /**
-         * 
-         * pass.begin(); // walk in (from left)
-         * if (fromFloor != 0) {
-         * view.moveLift(0, fromFloor);
-         * }
-         * view.openDoors(fromFloor);
-         * pass.enterLift(); // step inside
-         * 
-         * view.closeDoors();
-         * view.moveLift(fromFloor, toFloor); // ride lift
-         * view.openDoors(toFloor);
-         * 
-         * pass.exitLift(); // leave lift
-         * pass.end(); // walk out (to the right)
-         */
     }
 
-    private static void createPassengers(LiftView view, int number, LiftMonitor monitor) {
-        for (int i = 0; i < number; i++) {
+    private static void createPassengers(LiftView view, int nPassengers, LiftMonitor monitor) {
+        for (int i = 0; i < nPassengers; i++) {
             new Thread(() -> {
                 try {
                     Passenger tmp = view.createPassenger();
                     int startFloor = tmp.getStartFloor();
                     int destinationFloor = tmp.getDestinationFloor();
                     tmp.begin(); // Walk in from left
+
                     monitor.waitForEntry(startFloor);
                     tmp.enterLift();
                     monitor.passengerEntry(startFloor, destinationFloor);
-                    // monitor.waitForLift(destinationFloor, false);
+
                     tmp.exitLift();
                     monitor.passengerExit(destinationFloor);
                     tmp.end();
