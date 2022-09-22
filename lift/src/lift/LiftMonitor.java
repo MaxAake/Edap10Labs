@@ -97,8 +97,8 @@ public class LiftMonitor {
     }
 
     private void waitForPassengerEntryAndExit() throws InterruptedException {
+        notifyAll();
         while (isWaitingAndSpaceExists() || toExit[currentFloor] > 0 || entering.availablePermits() < 4) {
-            notifyAll();
             wait();
         }
     }

@@ -7,11 +7,11 @@ public class ConcurrentLift {
 
     public static void main(String[] args) {
 
-        final int NBR_FLOORS = 2, MAX_PASSENGERS = 4;
+        final int NBR_FLOORS = 7, MAX_PASSENGERS = 4;
 
         LiftView view = new LiftView(NBR_FLOORS, MAX_PASSENGERS);
         LiftMonitor monitor = new LiftMonitor(NBR_FLOORS, MAX_PASSENGERS);
-        createPassengers(view, 100, monitor);
+        createPassengers(view, 20, monitor);
         Thread elevatorLift = new Thread(() -> {
             try {
                 int[] floors;
