@@ -95,8 +95,9 @@ public class ProgressItem extends ConvenientPanel {
             cancelButton = new JButton("Cancel");
             cancelButton.addActionListener(e -> {
                 {
-                    cancel(tracker, future, cancelButton);
-                    finish(list, "Canceled!", mainBar);
+                    if (cancel(tracker, future, cancelButton)) {
+                        finish(list, "Canceled!", mainBar);
+                    }
                 }
             });
             add(cancelButton);
@@ -127,8 +128,9 @@ public class ProgressItem extends ConvenientPanel {
         });
     }
 
-    private void cancel(Tracker tracker, Future<String> future, JButton tmp) {
-        future.cancel(true);
+    private boolean cancel(Tracker tracker, Future<String> future, JButton tmp) {
         tracker.finish();
+        return future.cancel(true);
+
     }
 }

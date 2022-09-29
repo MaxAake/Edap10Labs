@@ -87,16 +87,4 @@ public class CodeBreaker implements SnifferCallback {
             progressItem.working(progressList, tracker, result, mainProgressBar);
         });
     }
-
-    /*
-     * No swing errros were reported when removing the invokeLater from this method.
-     * Ask supervisor!
-     */
-    private void removeItem(JPanel list, ProgressItem progressItem) {
-        SwingUtilities.invokeLater(() -> {
-            list.remove(progressItem);
-            mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
-            mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
-        });
-    }
 }
