@@ -1,7 +1,5 @@
 package wash.control;
 
-import java.io.Console;
-
 import actor.ActorThread;
 import wash.control.WashingMessage.Order;
 import wash.io.WashingIO;

@@ -18,7 +18,7 @@ public class Wash {
         temp.start();
         water.start();
         spin.start();
-        ActorThread<WashingMessage> currentProg = null; // This will be instanced. Probably.
+        ActorThread<WashingMessage> currentProg = null; // This will be instanced.
 
         while (true) {
             int n = io.awaitButton();
@@ -40,9 +40,6 @@ public class Wash {
                     currentProg.interrupt();
                     break;
             }
-            // TODO:
-            // if the user presses buttons 1-3, start a washing program
-            // if the user presses button 0, and a program has been started, stop it
         }
     }
 };

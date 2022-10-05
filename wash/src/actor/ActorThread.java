@@ -14,7 +14,6 @@ public class ActorThread<M> extends Thread {
 
     /** Returns the first message in the queue, or blocks if none available. */
     protected M receive() throws InterruptedException {
-        // TODO: implement this method (one or a few lines)
         return messageQueue.take();
     }
 

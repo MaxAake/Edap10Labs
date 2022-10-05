@@ -2,7 +2,6 @@ package wash.control;
 
 import actor.ActorThread;
 import wash.control.WashingMessage.Order;
-import wash.control.WashingMessage.Order;
 import wash.io.WashingIO;
 
 import static wash.control.WashingMessage.Order.*;
@@ -36,57 +35,11 @@ public class WashingProgram2 extends ActorThread<WashingMessage> {
     @Override
     public void run() {
         try {
-            // Lock the hatch
-            io.lock(true);
-            // Instruct SpinController to rotate barrel slowly, back and forth
-            // Expect an acknowledgment in response.
+            preConditions();
 
-            wash(Order.TEMP_SET_40, 20);
+            duringConditions();
 
-            wash(Order.TEMP_SET_60, 30);
-
-            for (int i = 0; i < 5; i++) {
-                System.out.println("setting WATER_FILL...");
-                water.send(new WashingMessage(this, WATER_FILL));
-                WashingMessage ackZ1 = receive();
-                System.out.println("washing program 1 got " + ackZ1);
-
-                System.out.println("setting SPIN_SLOW...");
-                spin.send(new WashingMessage(this, SPIN_SLOW));
-                WashingMessage ack11 = receive();
-                System.out.println("washing program 1 got " + ack11);
-
-                // Spin for five simulated minutes (one minute == 60000 milliseconds)
-                Thread.sleep(2 * 60000 / Settings.SPEEDUP);
-                // Instruct SpinController to stop spin barrel spin.
-                // Expect an acknowledgment in response.
-                System.out.println("setting SPIN_OFF...");
-                spin.send(new WashingMessage(this, SPIN_OFF));
-                WashingMessage ack21 = receive();
-                System.out.println("washing program 1 got " + ack21);
-                // Now that the barrel has stopped, it is safe to open the hatch.
-
-                System.out.println("setting WATER_DRAIN...");
-                water.send(new WashingMessage(this, WATER_DRAIN));
-                WashingMessage ackEmpty1 = receive();
-                System.out.println("washing program 1 got " + ackEmpty1);
-            }
-
-            System.out.println("setting SPIN_FAST...");
-            spin.send(new WashingMessage(this, SPIN_FAST));
-            WashingMessage ackCent = receive();
-            System.out.println("washing program 1 got " + ackCent);
-
-            // Spin for five simulated minutes (one minute == 60000 milliseconds)
-            Thread.sleep(5 * 60000 / Settings.SPEEDUP);
-            System.out.println("setting SPIN_OFF...");
-            spin.send(new WashingMessage(this, SPIN_OFF));
-            WashingMessage ack21 = receive();
-            System.out.println("washing program 1 got " + ack21);
-
-            io.lock(false);
-
-            System.out.println("washing program 1 finished");
+            postConditions();
         } catch (InterruptedException e) {
 
             // If we end up here, it means the program was interrupt()'ed:
@@ -98,15 +51,75 @@ public class WashingProgram2 extends ActorThread<WashingMessage> {
         }
     }
 
+    /*
+     * Lock and prewash for 20 minutes in 40°C water.
+     * Drain water for main wash.
+     */
     private void preConditions() throws InterruptedException {
+        io.lock(true);
+        wash(Order.TEMP_SET_40, 20);
 
     }
 
-    private void duringConditions() {
+    /*
+     * Main wash for 30 minutes in 60°C water.
+     * Drain the water.
+     * Rinse 5 times for 2 minutes in cold water.
+     * Centrifuge for 5 minutes.
+     */
+
+    private void duringConditions() throws InterruptedException {
+        wash(Order.TEMP_SET_60, 30);
+        rinse();
+        centrifuge();
+
+    }
+
+    private void rinse() throws InterruptedException {
+        for (int i = 0; i < 5; i++) {
+            System.out.println("setting WATER_FILL...");
+            water.send(new WashingMessage(this, WATER_FILL));
+            WashingMessage ackZ1 = receive();
+            System.out.println("washing program 1 got " + ackZ1);
+
+            System.out.println("setting SPIN_SLOW...");
+            spin.send(new WashingMessage(this, SPIN_SLOW));
+            WashingMessage ack11 = receive();
+            System.out.println("washing program 1 got " + ack11);
+
+            Thread.sleep(2 * 60000 / Settings.SPEEDUP);
+
+            System.out.println("setting SPIN_OFF...");
+            spin.send(new WashingMessage(this, SPIN_OFF));
+            WashingMessage ack21 = receive();
+            System.out.println("washing program 1 got " + ack21);
+
+            System.out.println("setting WATER_DRAIN...");
+            water.send(new WashingMessage(this, WATER_DRAIN));
+            WashingMessage ackEmpty1 = receive();
+            System.out.println("washing program 1 got " + ackEmpty1);
+        }
+    }
+
+    private void centrifuge() throws InterruptedException {
+        System.out.println("setting SPIN_FAST...");
+        spin.send(new WashingMessage(this, SPIN_FAST));
+        WashingMessage ackCent = receive();
+        System.out.println("washing program 1 got " + ackCent);
+
+        Thread.sleep(5 * 60000 / Settings.SPEEDUP);
 
     }
 
     private void postConditions() throws InterruptedException {
+        System.out.println("setting SPIN_OFF...");
+        spin.send(new WashingMessage(this, SPIN_OFF));
+        WashingMessage ack21 = receive();
+        System.out.println("washing program 2 got " + ack21);
+
+        io.lock(false);
+
+        System.out.println("washing program 2 finished");
 
     }
 
@@ -126,15 +139,11 @@ public class WashingProgram2 extends ActorThread<WashingMessage> {
         WashingMessage ack1 = receive();
         System.out.println("washing program 1 got " + ack1);
 
-        // Spin for five simulated minutes (one minute == 60000 milliseconds)
         Thread.sleep(time * 60000 / Settings.SPEEDUP);
-        // Instruct SpinController to stop spin barrel spin.
-        // Expect an acknowledgment in response.
         System.out.println("setting SPIN_OFF...");
         spin.send(new WashingMessage(this, SPIN_OFF));
         WashingMessage ack2 = receive();
         System.out.println("washing program 1 got " + ack2);
-        // Now that the barrel has stopped, it is safe to open the hatch.
 
         System.out.println("setting TEMP_IDLE...");
         temp.send(new WashingMessage(this, TEMP_IDLE));
