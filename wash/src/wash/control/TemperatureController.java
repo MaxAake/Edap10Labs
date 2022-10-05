@@ -1,5 +1,7 @@
 package wash.control;
 
+import java.io.Console;
+
 import actor.ActorThread;
 import wash.control.WashingMessage.Order;
 import wash.io.WashingIO;
@@ -37,6 +39,10 @@ public class TemperatureController extends ActorThread<WashingMessage> {
                     case TEMP_IDLE:
                         io.heat(false);
                         heating = false;
+                        if (lastSender != null) {
+                            lastSender.send(new WashingMessage(this, Order.ACKNOWLEDGMENT));
+                            lastSender = null;
+                        }
                         break;
                     case TEMP_SET_40:
                         setState(40);
@@ -48,13 +54,8 @@ public class TemperatureController extends ActorThread<WashingMessage> {
                         throw new Error("Unknown order in TemperatureController");
 
                 }
-
-                if (m != null) {
-                    lastSender.send(new WashingMessage(this, Order.ACKNOWLEDGMENT));
-                }
-
             } catch (InterruptedException e) {
-
+                System.out.println("error in temp");
             }
         }
     }
@@ -63,6 +64,10 @@ public class TemperatureController extends ActorThread<WashingMessage> {
         if (io.getTemperature() > temperature - upperMargin && heating) {
             io.heat(false);
             heating = false;
+            if (lastSender != null) {
+                lastSender.send(new WashingMessage(this, Order.ACKNOWLEDGMENT));
+                lastSender = null;
+            }
         } else if (io.getTemperature() < temperature - 2 + lowerMargin && !heating) {
             io.heat(true);
             heating = true;

@@ -57,11 +57,11 @@ public class SpinController extends ActorThread<WashingMessage> {
                 if (m != null) {
                     lastSender.send(new WashingMessage(this, Order.ACKNOWLEDGMENT));
                 }
-                // ... TODO ...
             }
         } catch (InterruptedException unexpected) {
             // we don't expect this thread to be interrupted,
             // so throw an error if it happens anyway
+            System.out.println("error in temp");
             throw new Error(unexpected);
         }
     }

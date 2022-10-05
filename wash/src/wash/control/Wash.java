@@ -18,9 +18,6 @@ public class Wash {
         temp.start();
         water.start();
         spin.start();
-        WashingProgram1 prog1 = new WashingProgram1(io, temp, water, spin);
-        // WashingProgram2 prog2 = new WashingProgram2(io, temp, water, spin);
-        WashingProgram3 prog3 = new WashingProgram3(io, temp, water, spin);
         ActorThread<WashingMessage> currentProg = null; // This will be instanced. Probably.
 
         while (true) {
@@ -28,14 +25,16 @@ public class Wash {
             System.out.println("user selected program " + n);
             switch (n) {
                 case 1:
-                    currentProg = prog1;
-                    prog1.run();
+                    currentProg = new WashingProgram1(io, temp, water, spin);
+                    currentProg.start();
                     break;
                 case 2:
+                    currentProg = new WashingProgram2(io, temp, water, spin);
+                    currentProg.start();
                     break;
                 case 3:
-                    currentProg = prog3;
-                    prog3.run();
+                    currentProg = new WashingProgram3(io, temp, water, spin);
+                    currentProg.start();
                     break;
                 case 0:
                     currentProg.interrupt();
