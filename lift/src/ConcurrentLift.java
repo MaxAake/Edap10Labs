@@ -12,7 +12,7 @@ public class ConcurrentLift {
         LiftView view = new LiftView(NBR_FLOORS, MAX_PASSENGERS);
         LiftMonitor monitor = new LiftMonitor(NBR_FLOORS, MAX_PASSENGERS);
         createPassengers(view, 20, monitor);
-        Thread elevatorLift = new Thread(() -> {
+        Runnable elevatorLogic = (() -> {
             try {
                 int[] floors;
                 while (true) {
@@ -20,13 +20,12 @@ public class ConcurrentLift {
                     if (floors[0] != floors[1]) {
                         view.moveLift(floors[0], floors[1]);
                     }
-                    // monitor.moveLift(view);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-
+        Thread elevatorLift = new Thread(elevatorLogic);
         elevatorLift.start();
     }
 

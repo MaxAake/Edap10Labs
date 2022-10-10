@@ -20,12 +20,15 @@ public class Train {
 	 * @throws InterruptedException
 	 */
 	public void makeTrain(int length) throws InterruptedException {
-		for (int i = 0; i < length; i++) {
-			Segment tmp = trainRoute.next();
-			trainMonitor.segmentBusy(tmp);
-			trainChain.add(tmp);
-			tmp.enter();
-		}
+		/**
+		 * for (int i = 0; i < length; i++) {
+		 * Segment tmp = trainRoute.next();
+		 * trainMonitor.segmentBusy(tmp);
+		 * trainChain.add(tmp);
+		 * tmp.enter();
+		 * }
+		 */
+		trainChain = trainMonitor.makeTrain(trainRoute, length);
 	}
 
 	/**

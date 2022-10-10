@@ -17,8 +17,8 @@ public class ServerTest {
 
     @Test
     void testOneTwit() throws InterruptedException {
-        final int NBR_MESSAGES  = 5;     // number of messages from each client
-        final int MESSAGE_DELAY = 100;   // maximal delay between messages 
+        final int NBR_MESSAGES = 5; // number of messages from each client
+        final int MESSAGE_DELAY = 100; // maximal delay between messages
 
         new Twit(NBR_MESSAGES, MESSAGE_DELAY).start();
 
@@ -27,9 +27,22 @@ public class ServerTest {
 
     @Test
     void testTwoTwits() throws InterruptedException {
-        final int NBR_TWITS     = 2;     // number of clients
-        final int NBR_MESSAGES  = 5;     // number of messages from each client
-        final int MESSAGE_DELAY = 100;   // maximal delay between messages 
+        final int NBR_TWITS = 2; // number of clients
+        final int NBR_MESSAGES = 5; // number of messages from each client
+        final int MESSAGE_DELAY = 100; // maximal delay between messages
+
+        for (int i = 0; i < NBR_TWITS; i++) {
+            new Twit(NBR_MESSAGES, MESSAGE_DELAY).start();
+        }
+
+        MessagingLog.expect(NBR_TWITS, NBR_TWITS * NBR_MESSAGES);
+    }
+
+    @Test
+    void testBigLoad() throws InterruptedException {
+        final int NBR_TWITS = 50; // number of clients
+        final int NBR_MESSAGES = 5000; // number of messages from each client
+        final int MESSAGE_DELAY = 0; // maximal delay between messages
 
         for (int i = 0; i < NBR_TWITS; i++) {
             new Twit(NBR_MESSAGES, MESSAGE_DELAY).start();

@@ -19,7 +19,7 @@ We do not think there is a safe maximal train length for ALL combinations of rai
 # I6
 Case _ illustrates:
 a) Busy-wait
-b) race-condition
+b) Busy-wait & Race condition
 c) race-condition (not sure?)
 d) deadlock
 
@@ -69,10 +69,8 @@ Two or more threads stop at the same time, each one trying to access a shared re
 ## • a busywait
 A thread is taking a lot of power while doing nothing.
 
-
 # R14. Is it ever safe to use if instead of while with wait()?
-Reasonably it should be safe to use 'if', if there is only 1 thing in the code that could possibly notify while the wait is ongoing. However we do seem to remember that Patrik said that one should always assume that a wait could end randomlyy(?)
-
+Reasonably it should be safe to use 'if', if there is only 1 thing in the code that could possibly notify while the wait is ongoing.
 
 # R15. How can we ensure a concurrent program is correct? Can we expect to find all issues by testing?
 No, if an error is unlikely but possible, there is no amount of testing which will be 100% certain to discover it. At a certain point the chances of an undiscovered error in the code may be very low, but not 0. The program must instead be manually analyzed for errors in the mutex setup.
